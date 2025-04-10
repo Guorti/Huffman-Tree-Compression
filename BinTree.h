@@ -83,7 +83,7 @@ public:
     if (this->m_L == nullptr && this->m_R == nullptr)
     {
       s.push_back(static_cast<uint8_t>('1'));
-      s.push_back(this->m_V.second); // Assuming m_V.second is unsigned char
+      s.push_back(this->m_V.second);
     }
   }
 

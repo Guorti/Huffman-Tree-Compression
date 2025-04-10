@@ -7,6 +7,8 @@
 
 #include "algorithm"
 
+#include <bitset>
+
 // -----------------------------------------------------------------------
 using TElement = unsigned char;
 using TFrequency = long long;
@@ -86,6 +88,7 @@ void process(const std::string &fname)
   tree->print_preorder(std::cout);
 
   std::vector<uint8_t> s;
+  std::string bitstream;
 
   tree->store_tree(s);
   std::cout << "==============================" << std::endl;
@@ -93,6 +96,14 @@ void process(const std::string &fname)
   std::cout << "Tree bytes as numeric values: ";
   for (uint8_t byte : s)
     std::cout << static_cast<int>(byte) << ' ';
+
+    for (uint8_t byte : s) {
+        std::bitset<8> bits(byte);
+        bitstream += bits.to_string(); // Adds 8 chars: '0' or '1'
+    }
+
+    std::cout << bitstream;
+
   std::cout << std::endl;
 
   std::cout << "==============================" << std::endl;
