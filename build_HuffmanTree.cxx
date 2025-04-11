@@ -41,7 +41,7 @@ TTree *BuildHuffman(const std::vector<long long> &P)
     TTree *l = q.back();
     q.pop_back();
 
-    TTree *n = new TTree(std::make_pair(l->value().first + r->value().second, 0));
+    TTree *n = new TTree(std::make_pair(l->value().first + r->value().first, 0));
     n->set_left(l);
     n->set_right(r);
     q.push_back(n);
