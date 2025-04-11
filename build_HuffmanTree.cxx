@@ -25,7 +25,7 @@ TTree *BuildHuffman(const std::vector<long long> &P)
   std::vector<TTree *> q;
   for (int e = 0; e < P.size(); ++e)
   {
-    std::cout << e << " " << P[e] << std::endl;
+    //std::cout << e << " " << P[e] << std::endl;
     TTree *n = new TTree(std::make_pair(P[e], TElement(e)));
     q.push_back(n);
     std::push_heap(q.begin(), q.end(), cmp);
@@ -99,6 +99,80 @@ std::string decodificar(const std::string& bitstream, const TTree* tree) {
 }
 
 
+void guardar_comprimido(const std::vector<uint8_t>& arbol_serializado, const std::string& bitstream, const std::string& nombre_archivo) {
+  std::ofstream out(nombre_archivo, std::ios::binary);
+
+  // Se guarda el tamaño del árbol
+  uint32_t tam_arbol = arbol_serializado.size();
+  out.write(reinterpret_cast<const char*>(&tam_arbol), sizeof(tam_arbol));
+
+  // Se guarda el árbol serializado
+  out.write(reinterpret_cast<const char*>(arbol_serializado.data()), tam_arbol);
+
+  // Se convierte el bitstream (string de '0' y '1') a bytes
+  std::vector<uint8_t> data_bytes;
+  for (size_t i = 0; i < bitstream.size(); i += 8) {
+      std::string byte_str = bitstream.substr(i, 8);
+      while (byte_str.length() < 8) byte_str += '0'; // Padding si el último byte es incompleto
+      uint8_t byte = static_cast<uint8_t>(std::bitset<8>(byte_str).to_ulong());
+      data_bytes.push_back(byte);
+  }
+
+  // Se guarda el tamaño real del bitstream (para decodificar correctamente)
+  uint32_t bits_validos = bitstream.size();
+  out.write(reinterpret_cast<const char*>(&bits_validos), sizeof(bits_validos));
+
+  // Se guarda los bytes codificados
+  out.write(reinterpret_cast<const char*>(data_bytes.data()), data_bytes.size());
+
+  out.close();
+}
+
+
+void decomprimir_archivo(const std::string& archivo, std::string& texto_resultado) {
+  std::ifstream in(archivo, std::ios::binary);
+
+  // Leer tamaño del árbol
+  uint32_t tam_arbol;
+  in.read(reinterpret_cast<char*>(&tam_arbol), sizeof(tam_arbol));
+
+  // Leer árbol serializado
+  std::vector<uint8_t> arbol_serializado(tam_arbol);
+  in.read(reinterpret_cast<char*>(arbol_serializado.data()), tam_arbol);
+
+  // Leer tamaño del bitstream
+  uint32_t bits_validos;
+  in.read(reinterpret_cast<char*>(&bits_validos), sizeof(bits_validos));
+
+  // Leer el resto (el bitstream codificado como bytes)
+  std::vector<uint8_t> data_bytes;
+  char c;
+  while (in.get(c)) {
+      data_bytes.push_back(static_cast<uint8_t>(c));
+  }
+  in.close();
+
+  // Convertir los bytes de vuelta al bitstream
+  std::string bitstream;
+  for (uint8_t byte : data_bytes) {
+      std::bitset<8> bits(byte);
+      bitstream += bits.to_string();
+  }
+  bitstream = bitstream.substr(0, bits_validos); // Quitar padding final
+
+  // Reconstruir el árbol
+  size_t index = 0;
+  TTree* tree = reconstruir_huffman(arbol_serializado, index);
+
+  // Decodificar texto
+  texto_resultado = decodificar(bitstream, tree);
+
+  delete tree;
+}
+
+
+
+
 
 // -----------------------------------------------------------------------
 void process(const std::string &fname)
@@ -139,19 +213,14 @@ void process(const std::string &fname)
   std::vector<uint8_t> s;
   std::string bitstream;
 
-  tree->store_tree(s);
+  tree->serializar_arbol(s);
   std::cout << "==============================" << std::endl;
-  std::cout << "STORE TREE" << std::endl;
-  std::cout << "Tree bytes as numeric values: ";
+  std::cout << "Serializacion de arbol" << std::endl;
+  std::cout << "Contenido del arbol en bytes: ";
+
   for (uint8_t byte : s)
     std::cout << static_cast<int>(byte) << ' ';
 
-    for (uint8_t byte : s) {
-        std::bitset<8> bits(byte);
-        bitstream += bits.to_string(); // Adds 8 chars: '0' or '1'
-    }
-
-    std::cout << bitstream;
 
   std::cout << std::endl;
 
@@ -202,6 +271,18 @@ void process(const std::string &fname)
   std::cout << "==============================" << std::endl;
 
   std::cout << "==============================" << std::endl;
+
+  guardar_comprimido(s, encoded_text, "comprimido.huffcomprimido");
+  std::cout << "Archivo comprimido como: " << "comprimido.huffcomprimido" << std::endl;
+
+  std::string resultado;
+  decomprimir_archivo("comprimido.huffcomprimido", resultado);
+
+  std::ofstream out("descomprimido.txt", std::ios::binary);
+  out.write(resultado.data(), resultado.size());
+  out.close();
+
+  std::cout << "Texto descomprimido en: descomprimido.txt\n";
   delete restored_tree;
 
 

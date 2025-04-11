@@ -81,16 +81,16 @@ public:
   }
 
   //*--*-*-*-*-*-*-*TALLER*--*-*-*-*-*-*-*
-  void store_tree(std::vector<uint8_t> &s)
+  void serializar_arbol(std::vector<uint8_t> &s)
   {
     if (this->m_L != nullptr && this->m_R != nullptr)
       s.push_back(static_cast<uint8_t>('0'));
 
     if (this->m_L != nullptr)
-      this->m_L->store_tree(s);
+      this->m_L->serializar_arbol(s);
 
     if (this->m_R != nullptr)
-      this->m_R->store_tree(s);
+      this->m_R->serializar_arbol(s);
 
     // Store leaf node
     if (this->m_L == nullptr && this->m_R == nullptr)
