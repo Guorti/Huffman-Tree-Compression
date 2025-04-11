@@ -1,10 +1,11 @@
 # Huffman Compressor-Decompressor
 
+Este proyecto en C++ implementa un sistema completo de compresión y descompresión de archivos utilizando el algoritmo de **Huffman**. El programa compresor lee un archivo binario, genera el árbol de Huffman a partir de la frecuencia de los bytes, codifica el contenido en una secuencia de bits y guarda tanto el árbol serializado como los datos comprimidos en un archivo `.huffcomprimido`. Por su parte, el programa descompresor toma ese archivo, reconstruye el árbol desde su forma serializada, decodifica el contenido binario y recupera el archivo original. Este sistema permite una compresión sin pérdida eficiente, y es ideal para experimentar con algoritmos de compresión y estructuras de datos como árboles binarios.
+
 ## Integrantes del equipo
 - Gustavo Ortiz  
 - Leonardo Velázquez
 
-Este proyecto en C++ implementa un sistema completo de compresión y descompresión de archivos utilizando el algoritmo de **Huffman**. El programa compresor lee un archivo binario, genera el árbol de Huffman a partir de la frecuencia de los bytes, codifica el contenido en una secuencia de bits y guarda tanto el árbol serializado como los datos comprimidos en un archivo `.huffcomprimido`. Por su parte, el programa descompresor toma ese archivo, reconstruye el árbol desde su forma serializada, decodifica el contenido binario y recupera el archivo original. Este sistema permite una compresión sin pérdida eficiente, y es ideal para experimentar con algoritmos de compresión y estructuras de datos como árboles binarios.
 
 ## Requisitos
 
