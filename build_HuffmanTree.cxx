@@ -51,6 +51,55 @@ TTree *BuildHuffman(const std::vector<long long> &P)
   return (q[0]);
 }
 
+TTree* reconstruir_huffman(const std::vector<uint8_t>& s, size_t& index) {
+  if (index >= s.size()) return nullptr;
+
+  uint8_t token = s[index++];
+
+  if (token == '1') {
+      uint8_t ch = s[index++];
+      return new TTree(std::make_pair(0LL, ch));  // solo importa el carácter
+  } else if (token == '0') {
+      TTree* left = reconstruir_huffman(s, index);
+      TTree* right = reconstruir_huffman(s, index);
+      TTree* node = new TTree(std::make_pair(0LL, 0));
+      node->set_left(left);
+      node->set_right(right);
+      return node;
+  }
+
+  return nullptr; // Error de formato
+}
+
+void codificar(const TTree* node, const std::string& path, std::vector<std::string>& codes) {
+  if (!node) return;
+
+  if (node->is_leaf()) {
+      codes[node->value().second] = path;
+  } else {
+      codificar(node->left(), path + "0", codes);
+      codificar(node->right(), path + "1", codes);
+  }
+}
+
+std::string decodificar(const std::string& bitstream, const TTree* tree) {
+  std::string result;
+  const TTree* node = tree;
+
+  for (char bit : bitstream) {
+      node = (bit == '0') ? node->left() : node->right();
+
+      if (node->is_leaf()) {
+          result += node->value().second;
+          node = tree;
+      }
+  }
+
+  return result;
+}
+
+
+
 // -----------------------------------------------------------------------
 void process(const std::string &fname)
 {
@@ -85,7 +134,7 @@ void process(const std::string &fname)
   std::cout << "==============================" << std::endl;
   std::cout << "Preoder" << std::endl;
   std::cout << "==============================" << std::endl;
-  tree->print_preorder(std::cout);
+  //tree->print_preorder(std::cout);
 
   std::vector<uint8_t> s;
   std::string bitstream;
@@ -118,6 +167,43 @@ void process(const std::string &fname)
       << std::endl;
   std::cout << "Most repeated element: " << most << " (f = " << P[most] << ")" << std::endl;
   std::cout << "Least repeated element: " << least << " (f = " << P[least] << ")" << std::endl;
+
+  std::cout << "==============================" << std::endl;
+
+  std::cout << "==============================" << std::endl;
+  //Codificar el texto original
+
+  std::vector<std::string> codes(256);
+  codificar(tree, "", codes);
+
+  std::string encoded_text;
+  for (unsigned char c : data) {
+      encoded_text += codes[c];
+  }
+
+  std::cout << "Texto codificado en bits: " << encoded_text << std::endl;
+
+  std::cout << "==============================" << std::endl;
+
+  std::cout << "==============================" << std::endl;
+
+
+
+  size_t index = 0;
+  TTree* restored_tree = reconstruir_huffman(s, index);
+
+  //::cout << "Árbol reconstruido desde los bytes:" << std::endl;
+  //restored_tree->print_preorder(std::cout);
+  // Paso 4: Decodificar usando el árbol restaurado
+  std::string decoded_text = decodificar(encoded_text, restored_tree);
+
+  std::cout << "Texto decodificado: " << decoded_text << std::endl;
+
+  std::cout << "==============================" << std::endl;
+
+  std::cout << "==============================" << std::endl;
+  delete restored_tree;
+
 
   // Finish
   delete tree;

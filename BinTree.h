@@ -27,6 +27,19 @@ public:
     return (this->m_V);
   }
 
+  bool is_leaf() const {
+    return (m_L == nullptr && m_R == nullptr);
+  }
+  
+  Self* left() const {
+    return m_L;
+  }
+  
+  Self* right() const {
+    return m_R;
+  }
+  
+
   void set_left(Self *l)
   {
     if (this->m_L != nullptr)
